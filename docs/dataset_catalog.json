@@ -1,0 +1,31 @@
+{
+  "synthetic_dataset": {
+    "total_molecules": 36,
+    "generation_tool": "RDKit + Pillow",
+    "styles": ["clean", "realistic"],
+    "categories": {
+      "Alcohol": 5,
+      "Carboxylic Acid": 4,
+      "Aromatic": 5,
+      "Heterocycle": 5,
+      "Amino Acid": 4,
+      "Drug": 4,
+      "Sugar": 2,
+      "Cycloalkane": 2,
+      "Aldehyde": 2,
+      "Ketone": 1,
+      "Amine": 2
+    },
+    "complexity": {
+      "simple": 12,
+      "medio": 14,
+      "complejo": 10
+    },
+    "included_in_repo": false
+  },
+  "training_dataset": {
+    "source": "UniParser/MolParser-7M",
+    "config": "test_simple_10k",
+    "training_samples": 25
+  }
+}

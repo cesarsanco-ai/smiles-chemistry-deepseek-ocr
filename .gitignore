@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Model weights and outputs (downloaded at runtime)
+deepseek_ocr/
+lora_model/
+outputs/
+checkpoints/
+*.safetensors
+
+# Datasets
+data/
+*.zip
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+
+# Logs
+*.log

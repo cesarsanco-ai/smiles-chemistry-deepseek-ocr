@@ -1,0 +1,33 @@
+{
+  "project": "SMILES Chemistry OCR — DeepSeek-OCR",
+  "author": "Carlos Cesar Sanchez Coronel",
+  "model": {
+    "base": "unsloth/DeepSeek-OCR",
+    "parameters_total": 3413615872,
+    "parameters_trainable": 77509632,
+    "trainable_percentage": 2.27,
+    "fine_tuning": "LoRA",
+    "lora_rank": 16,
+    "lora_alpha": 16
+  },
+  "training": {
+    "platform": "Google Colab (Tesla T4)",
+    "dataset": "UniParser/MolParser-7M (test_simple_10k)",
+    "training_samples": 25,
+    "max_steps": 10,
+    "batch_size_effective": 4,
+    "learning_rate": 0.0002,
+    "optimizer": "adamw_8bit",
+    "resolution_mode": "Gundam (1024 base, 640 crop)"
+  },
+  "synthetic_dataset": {
+    "total_molecules": 36,
+    "categories": 11,
+    "included_in_repo": false,
+    "generation_tool": "RDKit + Pillow"
+  },
+  "inference": {
+    "output_format": "SMILES notation in <smiles> tags",
+    "prompt": "<image>\\nFree OCR. "
+  }
+}

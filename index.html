@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="OCR de estructuras químicas con DeepSeek-OCR y LoRA. Extracción de notación SMILES desde imágenes moleculares.">
+  <meta name="author" content="Carlos Cesar Sanchez Coronel">
+  <title>OCR Químico → SMILES | DeepSeek-OCR</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav container">
+      <div class="logo">SMILES OCR</div>
+      <ul class="nav-links">
+        <li><a href="#contexto">Contexto</a></li>
+        <li><a href="#pipeline">Pipeline</a></li>
+        <li><a href="#entrenamiento">Entrenamiento</a></li>
+        <li><a href="#moleculas">Moléculas</a></li>
+        <li><a href="#codigo">Código</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <span class="hero-badge">DeepSeek-OCR · LoRA · Quimioinformática</span>
+        <h1>OCR de Estructuras Químicas → SMILES</h1>
+        <p class="hero-subtitle">
+          Pipeline de visión multimodal que convierte diagramas 2D de moléculas en
+          notación <strong>SMILES</strong>, utilizando <strong>DeepSeek-OCR (3B)</strong>
+          con fine-tuning eficiente mediante <strong>LoRA</strong>.
+        </p>
+        <div class="hero-meta">
+          <span class="meta-chip">Carlos Cesar Sanchez Coronel</span>
+          <span class="meta-chip">DeepSeek-OCR + Unsloth</span>
+          <span class="meta-chip">Noviembre 2025</span>
+        </div>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="https://github.com/cesarsanco-ai/SMILES-CHEMISTRY-DEEPSEEK-OCR" target="_blank" rel="noopener">Ver en GitHub</a>
+          <a class="btn btn-secondary" href="docs/pipeline.md">Documentación técnica</a>
+          <a class="btn btn-secondary" href="notebooks/notebook_colab.ipynb">Notebook Colab</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="contexto">
+      <div class="container">
+        <h2 class="section-title">Contexto del problema</h2>
+        <p class="section-desc">
+          En quimioinformática, convertir imágenes de estructuras moleculares a SMILES
+          habilita búsqueda, almacenamiento y análisis computacional de compuestos químicos.
+        </p>
+
+        <div class="alert">
+          El modelo base (~3 GB) y el dataset completo no forman parte de este repositorio.
+          La documentación presenta la arquitectura, metodología y ejemplos representativos.
+        </div>
+
+        <div class="grid-2">
+          <article class="card">
+            <h3>Entrada</h3>
+            <p>Imagen PNG/JPG de estructura molecular 2D — diagramas de papers, bases de datos o generados sintéticamente.</p>
+          </article>
+          <article class="card">
+            <h3>Salida</h3>
+            <p>Cadena SMILES que codifica la topología atómica y enlaces de la molécula: <code>&lt;smiles&gt;...&lt;/smiles&gt;</code></p>
+          </article>
+          <article class="card">
+            <h3>Modelo</h3>
+            <ul>
+              <li>DeepSeek-OCR (3B parámetros)</li>
+              <li>Compresión óptica de contexto (10×)</li>
+              <li>DeepEncoder: SAM + CLIP</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>Adaptación</h3>
+            <ul>
+              <li>LoRA rank 16 (2.27% params)</li>
+              <li>MolParser-7M (25 muestras)</li>
+              <li>Generador sintético RDKit (36 mol.)</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="pipeline">
+      <div class="container">
+        <h2 class="section-title">Pipeline de OCR químico</h2>
+        <p class="section-desc">
+          Flujo end-to-end desarrollado en Google Colab con GPU Tesla T4.
+        </p>
+
+        <div class="pipeline">
+          <div class="pipeline-step">
+            <span class="step-num">1</span>
+            <div><strong>Carga del modelo</strong><p>Descarga de <code>unsloth/DeepSeek-OCR</code> desde Hugging Face con Unsloth.</p></div>
+          </div>
+          <div class="pipeline-step">
+            <span class="step-num">2</span>
+            <div><strong>Evaluación base</strong><p>Inferencia sin fine-tuning sobre imagen molecular de prueba.</p></div>
+          </div>
+          <div class="pipeline-step">
+            <span class="step-num">3</span>
+            <div><strong>LoRA fine-tuning</strong><p>Adaptación con 25 muestras de MolParser-7M en formato conversacional multimodal.</p></div>
+          </div>
+          <div class="pipeline-step">
+            <span class="step-num">4</span>
+            <div><strong>Inferencia ajustada</strong><p>Extracción de SMILES con resolución Gundam (1024/640 px, crop mode).</p></div>
+          </div>
+          <div class="pipeline-step">
+            <span class="step-num">5</span>
+            <div><strong>Generador sintético</strong><p>RDKit genera 36 moléculas en estilos clean y realistic para pruebas adicionales.</p></div>
+          </div>
+        </div>
+
+        <h3 class="section-title" style="margin-top: 2.5rem; font-size: 1.25rem;">Arquitectura</h3>
+        <pre class="arch-diagram">Imagen molecular (PNG)
+        │
+        ▼
+DeepEncoder
+  ├── SAM (80M) — percepción local
+  ├── CLIP (300M) — conocimiento semántico
+  └── Compresor 16× — tokens visuales
+        │
+        ▼
+DeepSeek-OCR (3B) + LoRA adapters
+        │
+        ▼
+&lt;smiles&gt; CC(=O)Oc1ccccc1C(=O)O &lt;/smiles&gt;</pre>
+      </div>
+    </section>
+
+    <section id="entrenamiento">
+      <div class="container">
+        <h2 class="section-title">Configuración de entrenamiento</h2>
+        <p class="section-desc">Fine-tuning eficiente con LoRA sobre subset de MolParser-7M.</p>
+
+        <div class="grid-3">
+          <article class="card">
+            <div class="metric-value">3.4B</div>
+            <div class="metric-label">Parámetros totales</div>
+          </article>
+          <article class="card">
+            <div class="metric-value">77.5M</div>
+            <div class="metric-label">Parámetros entrenables (LoRA)</div>
+          </article>
+          <article class="card">
+            <div class="metric-value">2.27%</div>
+            <div class="metric-label">Ratio entrenado</div>
+          </article>
+          <article class="card">
+            <div class="metric-value">16</div>
+            <div class="metric-label">LoRA rank / alpha</div>
+          </article>
+          <article class="card">
+            <div class="metric-value">25</div>
+            <div class="metric-label">Muestras de entrenamiento</div>
+          </article>
+          <article class="card">
+            <div class="metric-value">10</div>
+            <div class="metric-label">Training steps</div>
+          </article>
+        </div>
+
+        <div class="grid-2" style="margin-top: 1.5rem;">
+          <article class="card">
+            <h3>Resolución Gundam</h3>
+            <p>Modo recomendado para documentos complejos: vista global 1024 px con tiles locales de 640 px y crop mode activado.</p>
+          </article>
+          <article class="card">
+            <h3>Generador sintético</h3>
+            <p>36 moléculas en 11 categorías (alcoholes, aromáticos, fármacos, aminoácidos, heterociclos) generadas con RDKit en variantes clean y realistic.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="moleculas">
+      <div class="container">
+        <h2 class="section-title">Ejemplos de estructuras</h2>
+        <p class="section-desc">
+          Muestras representativas del generador sintético: estilo limpio vs. estilo realista.
+        </p>
+
+        <div class="gallery">
+          <figure class="gallery-item">
+            <div class="compare-grid">
+              <div>
+                <div class="compare-label">Clean</div>
+                <img src="assets/images/clean_001_Methanol.png" alt="Metanol clean" loading="lazy">
+              </div>
+              <div>
+                <div class="compare-label">Realistic</div>
+                <img src="assets/images/realistic_001_Methanol.png" alt="Metanol realistic" loading="lazy">
+              </div>
+            </div>
+            <figcaption class="gallery-caption">
+              <h4>Metanol — CO</h4>
+              <p>Alcohol simple. SMILES: <code>CO</code></p>
+            </figcaption>
+          </figure>
+
+          <figure class="gallery-item">
+            <div class="compare-grid">
+              <div>
+                <div class="compare-label">Clean</div>
+                <img src="assets/images/clean_010_Benzene.png" alt="Benceno clean" loading="lazy">
+              </div>
+              <div>
+                <div class="compare-label">Realistic</div>
+                <img src="assets/images/realistic_010_Benzene.png" alt="Benceno realistic" loading="lazy">
+              </div>
+            </div>
+            <figcaption class="gallery-caption">
+              <h4>Benceno — c1ccccc1</h4>
+              <p>Compuesto aromático. SMILES: <code>c1ccccc1</code></p>
+            </figcaption>
+          </figure>
+
+          <figure class="gallery-item">
+            <div class="compare-grid">
+              <div>
+                <div class="compare-label">Clean</div>
+                <img src="assets/images/clean_023_Aspirin.png" alt="Aspirina clean" loading="lazy">
+              </div>
+              <div>
+                <div class="compare-label">Realistic</div>
+                <img src="assets/images/realistic_023_Aspirin.png" alt="Aspirina realistic" loading="lazy">
+              </div>
+            </div>
+            <figcaption class="gallery-caption">
+              <h4>Aspirina</h4>
+              <p>Fármaco. SMILES: <code>CC(=O)Oc1ccccc1C(=O)O</code></p>
+            </figcaption>
+          </figure>
+
+          <figure class="gallery-item">
+            <div class="compare-grid">
+              <div>
+                <div class="compare-label">Clean</div>
+                <img src="assets/images/clean_024_Caffeine.png" alt="Cafeína clean" loading="lazy">
+              </div>
+              <div>
+                <div class="compare-label">Realistic</div>
+                <img src="assets/images/realistic_024_Caffeine.png" alt="Cafeína realistic" loading="lazy">
+              </div>
+            </div>
+            <figcaption class="gallery-caption">
+              <h4>Cafeína</h4>
+              <p>Heterociclo complejo. SMILES: <code>CN1C=NC2=C1C(=O)N(C(=O)N2C)C</code></p>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="codigo">
+      <div class="container">
+        <h2 class="section-title">Estructura del código</h2>
+        <p class="section-desc">
+          Implementación modular refactorizada desde el notebook de Colab.
+        </p>
+
+        <pre class="code-tree">SMILES-CHEMISTRY-DEEPSEEK-OCR/
+├── index.html                 # Presentación del proyecto
+├── src/
+│   ├── config.py              # Hiperparámetros LoRA y entrenamiento
+│   ├── dataset.py             # Carga MolParser-7M y formato conversacional
+│   ├── inference.py           # Inferencia y extracción SMILES
+│   └── training.py            # LoRA y TrainingArguments
+├── notebooks/
+│   └── notebook_colab.ipynb   # Notebook de Colab
+└── docs/
+    ├── pipeline.md
+    ├── metrics.json
+    └── dataset_catalog.json   # Catálogo del dataset sintético</pre>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>
+        <strong>Carlos Cesar Sanchez Coronel</strong><br>
+        OCR de estructuras químicas con DeepSeek-OCR
+      </div>
+      <div>
+        <a href="https://github.com/cesarsanco-ai/SMILES-CHEMISTRY-DEEPSEEK-OCR">GitHub</a>
+        ·
+        <a href="https://huggingface.co/unsloth/DeepSeek-OCR">DeepSeek-OCR</a>
+        ·
+        <a href="https://arxiv.org/abs/2510.18234">Paper</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
